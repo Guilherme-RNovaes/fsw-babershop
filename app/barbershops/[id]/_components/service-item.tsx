@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Button } from "@/app/_components/ui/button";
 import { Card, CardContent } from "@/app/_components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/app/_components/ui/sheet";
@@ -9,6 +9,7 @@ import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { Calendar } from "@/app/_components/ui/calendar";
 import { ptBR } from "date-fns/locale";
+import { generateDayTimeList } from "../_helpers/hours";
 
 interface ServiceItemProps {
   service: Service;
@@ -17,12 +18,17 @@ interface ServiceItemProps {
 
 const ServiceItem = ({ service, isAuthenticated }: ServiceItemProps) => {
   const [date, setDate] = React.useState<Date | undefined>(new Date())
+  const [hour, setHour] = React.useState<string | undefined>()
+
   const handleBookingClick = () => {
     if (!isAuthenticated) {
       return signIn("google")
     }
     // TODO: abrir modal de agendamento
   }
+  const timeList = useMemo(() => {
+    return date ? generateDayTimeList(date) : [];
+  }, [date]);
   return (
     <Card>
       <CardContent className="p-3 w-full">
@@ -76,7 +82,18 @@ const ServiceItem = ({ service, isAuthenticated }: ServiceItemProps) => {
                       },
                     }}
                   />
+
                   {/* mostrar lista de horários somente se alguma data estiver selecionada */}
+                  {date && (
+                    <div className="flex gap-3 overflow-x-auto py-6 px-5 border-y border-solid border-secondary [&::-webkit-scrollbar]:hidden">
+                      {timeList.map((time) => (
+                        <Button variant='outline' className="rounded-full" key={time}>
+                          {time}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+
                 </SheetContent>
               </Sheet>
             </div>
