@@ -1,11 +1,18 @@
+"use client"
+
 import { Prisma } from "@prisma/client";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
 import { format, isFuture } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import Image from "next/image";
+import { Button } from "./ui/button";
+import { cancelBooking } from "../_actions/cancel-booking";
+import { toast } from "sonner";
+import { useState } from "react";
+import { Loader } from "lucide-react";
 
 interface BookingItemProps {
   booking: Prisma.BookingGetPayload<{
@@ -17,7 +24,22 @@ interface BookingItemProps {
 }
 
 const BookingItem = ({ booking }: BookingItemProps) => {
-  const isBookingConfirmed = isFuture(booking.date)
+  const [isDeleatedLoading, setIsDeleatedLoading] = useState(false);
+  const isBookingConfirmed = isFuture(booking.date);
+
+  const handleCancelClick = async () => {
+    setIsDeleatedLoading(true)
+    try {
+      await cancelBooking(booking.id)
+
+      toast.success("Reserva cancelada com sucesso!");
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsDeleatedLoading(false)
+    }
+  }
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -67,7 +89,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
               </Card>
             </div>
           </div>
-          <Badge variant={isBookingConfirmed ? 'default' : 'secondary'} className="w-fit mt-3 mb-6">{isBookingConfirmed ? 'Confirmado' : 'Finalizado'}</Badge>
+          <Badge variant={isBookingConfirmed ? 'default' : 'secondary'} className="w-fit mt-3 my-3">{isBookingConfirmed ? 'Confirmado' : 'Finalizado'}</Badge>
 
           <Card>
             <CardContent className="p-3 gap-3 flex flex-col">
@@ -95,6 +117,18 @@ const BookingItem = ({ booking }: BookingItemProps) => {
               </div>
             </CardContent>
           </Card>
+
+          <SheetFooter className="flex-row gap-3 mt-6">
+            <SheetClose asChild>
+              <Button className="w-full" variant="secondary">Voltar</Button>
+            </SheetClose>
+            <Button onClick={handleCancelClick} disabled={!isBookingConfirmed || isDeleatedLoading} className="w-full" variant="destructive">
+              {isDeleatedLoading && (
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Cancelar Reserva
+            </Button>
+          </SheetFooter>
         </div>
       </SheetContent>
     </Sheet>
