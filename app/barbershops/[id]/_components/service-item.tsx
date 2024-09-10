@@ -10,7 +10,7 @@ import Image from "next/image";
 import { Calendar } from "@/app/_components/ui/calendar";
 import { ptBR } from "date-fns/locale";
 import { generateDayTimeList } from "../_helpers/hours";
-import { format, setHours, setMinutes } from "date-fns";
+import { addDays, format, setHours, setMinutes } from "date-fns";
 import { saveBooking } from "../_actions/save-booking";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -149,7 +149,7 @@ const ServiceItem = ({ barbershop, service, isAuthenticated }: ServiceItemProps)
                     <SheetTitle>Fazer Reserva</SheetTitle>
                   </SheetHeader>
                   <div className="py-6">
-                    <Calendar mode="single" selected={date} onSelect={handleDateClick} fromDate={new Date()} locale={ptBR}
+                    <Calendar mode="single" selected={date} onSelect={handleDateClick} fromDate={addDays(new Date(), 1)} locale={ptBR}
                       styles={{
                         head_cell: {
                           width: '100%',
